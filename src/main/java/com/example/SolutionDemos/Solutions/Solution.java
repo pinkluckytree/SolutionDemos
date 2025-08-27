@@ -3,8 +3,78 @@ package com.example.SolutionDemos.Solutions;
 import java.util.*;
 
 public class Solution {
+    /**
+     * 给你一个整数数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。
+     *
+     * 返回 滑动窗口中的最大值 。
+     */
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        int n = nums.length;
+        int right;
+        int left = 0;
+        int []result = new int[n-k+1];
+        TreeMap<Integer, Integer> occurTimes = new TreeMap<>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2-o1;
+            }
+        });
+        for (right = 0; right < n; right++) {
+            if (right == 0) {
+                while (left < k) {
+                    occurTimes.put(nums[left], occurTimes.getOrDefault(nums[left], 0) + 1);
+                    left++;
+                }
+                result[0] = occurTimes.firstKey();
+                continue;
+            }
+            occurTimes.put(nums[right-1], occurTimes.getOrDefault(nums[right-1], 0) - 1);
+            occurTimes.put(nums[left], occurTimes.getOrDefault(nums[left], 0) + 1);
+            left++;
+            while (occurTimes.get(occurTimes.firstKey())<=0){
+                occurTimes.pollFirstEntry();
+            }
+            result[right] = occurTimes.firstKey();
+        }
+        return result;
+    }
 
-
+    /**
+     * 给定一个整数数组 nums 和一个整数 k ，请返回其中出现频率前 k 高的元素。可以按 任意顺序 返回答案。
+     */
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> occurTimes = new HashMap<>();
+        for (int x : nums) {
+            occurTimes.put(x, occurTimes.getOrDefault(x, 0) + 1);
+        }
+        PriorityQueue<int[]> minHeap = new PriorityQueue<>(new Comparator<int[]>() {
+            @Override
+            public int compare(int[] o1, int[] o2) {
+                return o1[1] - o2[1];
+            }
+        });
+        for (Map.Entry<Integer, Integer> entry : occurTimes.entrySet()) {
+            Integer key = entry.getKey();
+            Integer value = entry.getValue();
+            if (minHeap.size() < k) {
+                minHeap.offer(new int[] {key, value});
+                continue;
+            }
+            int[] peek = minHeap.peek();
+            assert peek != null;
+            if (peek[1] < value) {
+                minHeap.poll();
+                minHeap.offer(new int[] {key, value});
+            }
+        }
+        int[] result = new int[k];
+        int i = 0;
+        while (minHeap.size() > 0) {
+            result[i] = minHeap.poll()[0];
+            i++;
+        }
+        return result;
+    }
 
     /**
      * 给定一个字符串 s 和一个整数 k，从字符串开头算起，每计数至 2k 个字符，就反转这 2k 字符中的前 k 个字符。
@@ -13,9 +83,9 @@ public class Solution {
      */
     public String reverseStr(String s, int k) {
         char[] array = s.toCharArray();
-        for (int i = 0; i < array.length ; i = i + 2 * k) {
-            if (i + 2*k > array.length) {
-                reverseStrHelper(array, i, Math.min(i + k -1, array.length - 1));
+        for (int i = 0; i < array.length; i = i + 2 * k) {
+            if (i + 2 * k > array.length) {
+                reverseStrHelper(array, i, Math.min(i + k - 1, array.length - 1));
             } else {
                 reverseStrHelper(array, i, i + k - 1);
             }
@@ -52,52 +122,52 @@ public class Solution {
      *
      * 0 <= a, b, c, d < n a、b、c 和 d 互不相同 nums[a] + nums[b] + nums[c] + nums[d] == target 你可以按 任意顺序 返回答案 。
      */
-    public List<List<Integer>> fourSum(int[] nums, int target) {
-        Arrays.sort(nums);
-        int n = nums.length;
-        List<Integer> list = new ArrayList<>();
-        Map<String, List<Integer>> map = new HashMap<>();
-        long sum = 0;
-        for (int i = 0; i < n - 3; i++) {
-            list.add(nums[i]);
-            sum += nums[i];
-            for (int j = i + 1; j < n - 2; j++) {
-                if (nums[j] > 0 && sum + nums[j] > target) {
-                    continue;
-                }
-                sum += nums[j];
-                list.add(nums[j]);
-                int r = j + 1;
-                int l = n - 1;
-                while (r < l) {
-                    long tempSum = nums[r] + nums[l];
-                    if (tempSum == target - sum) {
-                        list.add(nums[r]);
-                        list.add(nums[l]);
-                        map.put(list.toString(), new ArrayList<>(list));
-                        list.removeLast();
-                        list.removeLast();
-                        r++;
-                    }
-                    if (tempSum < target - sum) {
-                        r++;
-                    }
-                    if (tempSum > target - sum) {
-                        l--;
-                    }
-                }
-                sum -= nums[j];
-                list.removeLast();
-            }
-            sum -= nums[i];
-            list.removeLast();
-        }
-        List<List<Integer>> result = new ArrayList<>();
-        map.forEach((k, v) -> {
-            result.add(v);
-        });
-        return result;
-    }
+//    public List<List<Integer>> fourSum(int[] nums, int target) {
+//        Arrays.sort(nums);
+//        int n = nums.length;
+//        List<Integer> list = new ArrayList<>();
+//        Map<String, List<Integer>> map = new HashMap<>();
+//        long sum = 0;
+//        for (int i = 0; i < n - 3; i++) {
+//            list.add(nums[i]);
+//            sum += nums[i];
+//            for (int j = i + 1; j < n - 2; j++) {
+//                if (nums[j] > 0 && sum + nums[j] > target) {
+//                    continue;
+//                }
+//                sum += nums[j];
+//                list.add(nums[j]);
+//                int r = j + 1;
+//                int l = n - 1;
+//                while (r < l) {
+//                    long tempSum = nums[r] + nums[l];
+//                    if (tempSum == target - sum) {
+//                        list.add(nums[r]);
+//                        list.add(nums[l]);
+//                        map.put(list.toString(), new ArrayList<>(list));
+//                        list.removeLast();
+//                        list.removeLast();
+//                        r++;
+//                    }
+//                    if (tempSum < target - sum) {
+//                        r++;
+//                    }
+//                    if (tempSum > target - sum) {
+//                        l--;
+//                    }
+//                }
+//                sum -= nums[j];
+//                list.removeLast();
+//            }
+//            sum -= nums[i];
+//            list.removeLast();
+//        }
+//        List<List<Integer>> result = new ArrayList<>();
+//        map.forEach((k, v) -> {
+//            result.add(v);
+//        });
+//        return result;
+//    }
 
     /**
      * 给你两个字符串：ransomNote 和 magazine ，判断 ransomNote 能不能由 magazine 里面的字符构成。
