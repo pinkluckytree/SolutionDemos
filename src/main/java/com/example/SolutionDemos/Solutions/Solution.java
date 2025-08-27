@@ -3,6 +3,177 @@ package com.example.SolutionDemos.Solutions;
 import java.util.*;
 
 public class Solution {
+
+
+
+    /**
+     * 给定一个字符串 s 和一个整数 k，从字符串开头算起，每计数至 2k 个字符，就反转这 2k 字符中的前 k 个字符。
+     *
+     * 如果剩余字符少于 k 个，则将剩余字符全部反转。 如果剩余字符小于 2k 但大于或等于 k 个，则反转前 k 个字符，其余字符保持原样。
+     */
+    public String reverseStr(String s, int k) {
+        char[] array = s.toCharArray();
+        for (int i = 0; i < array.length ; i = i + 2 * k) {
+            if (i + 2*k > array.length) {
+                reverseStrHelper(array, i, Math.min(i + k -1, array.length - 1));
+            } else {
+                reverseStrHelper(array, i, i + k - 1);
+            }
+        }
+        return String.valueOf(array);
+    }
+
+    public void reverseStrHelper(char[] s, int r, int l) {
+        while (r < l) {
+            char tempC = s[r];
+            s[r] = s[l];
+            s[l] = tempC;
+            r++;
+            l--;
+        }
+    }
+
+    /**
+     * 编写一个函数，其作用是将输入的字符串反转过来。输入字符串以字符数组 s 的形式给出。
+     *
+     * 不要给另外的数组分配额外的空间，你必须原地修改输入数组、使用 O(1) 的额外空间解决这一问题
+     */
+    public void reverseString(char[] s) {
+        for (int i = 0; i < s.length / 2; i++) {
+            char tempC = s[i];
+            s[i] = s[s.length - i - 1];
+            s[s.length - i - 1] = tempC;
+        }
+    }
+
+    /**
+     * 给你一个由 n 个整数组成的数组 nums ，和一个目标值 target 。请你找出并返回满足下述全部条件且不重复的四元组 [nums[a], nums[b], nums[c], nums[d]]
+     * （若两个四元组元素一一对应，则认为两个四元组重复）：
+     *
+     * 0 <= a, b, c, d < n a、b、c 和 d 互不相同 nums[a] + nums[b] + nums[c] + nums[d] == target 你可以按 任意顺序 返回答案 。
+     */
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        Arrays.sort(nums);
+        int n = nums.length;
+        List<Integer> list = new ArrayList<>();
+        Map<String, List<Integer>> map = new HashMap<>();
+        long sum = 0;
+        for (int i = 0; i < n - 3; i++) {
+            list.add(nums[i]);
+            sum += nums[i];
+            for (int j = i + 1; j < n - 2; j++) {
+                if (nums[j] > 0 && sum + nums[j] > target) {
+                    continue;
+                }
+                sum += nums[j];
+                list.add(nums[j]);
+                int r = j + 1;
+                int l = n - 1;
+                while (r < l) {
+                    long tempSum = nums[r] + nums[l];
+                    if (tempSum == target - sum) {
+                        list.add(nums[r]);
+                        list.add(nums[l]);
+                        map.put(list.toString(), new ArrayList<>(list));
+                        list.removeLast();
+                        list.removeLast();
+                        r++;
+                    }
+                    if (tempSum < target - sum) {
+                        r++;
+                    }
+                    if (tempSum > target - sum) {
+                        l--;
+                    }
+                }
+                sum -= nums[j];
+                list.removeLast();
+            }
+            sum -= nums[i];
+            list.removeLast();
+        }
+        List<List<Integer>> result = new ArrayList<>();
+        map.forEach((k, v) -> {
+            result.add(v);
+        });
+        return result;
+    }
+
+    /**
+     * 给你两个字符串：ransomNote 和 magazine ，判断 ransomNote 能不能由 magazine 里面的字符构成。
+     *
+     * 如果可以，返回 true ；否则返回 false 。
+     *
+     * magazine 中的每个字符只能在 ransomNote 中使用一次。
+     */
+    public boolean canConstruct(String ransomNote, String magazine) {
+        char[] chars1 = ransomNote.toCharArray();
+        char[] chars2 = magazine.toCharArray();
+        Map<Character, Integer> map = new HashMap<>();
+        for (char x : chars2) {
+            map.put(x, map.getOrDefault(x, 0) + 1);
+        }
+        for (char y : chars1) {
+            map.put(y, map.getOrDefault(y, 0) - 1);
+            if (map.get(y) < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 给你四个整数数组 nums1、nums2、nums3 和 nums4 ，数组长度都是 n ，请你计算有多少个元组 (i, j, k, l) 能满足：
+     *
+     * 0 <= i, j, k, l < n nums1[i] + nums2[j] + nums3[k] + nums4[l] == 0
+     */
+    public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
+        int n = nums1.length;
+        Map<Long, Integer> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                map.put((long)(nums1[i] + nums2[j]), map.getOrDefault((long)(nums1[i] + nums2[j]), 0) + 1);
+            }
+        }
+        int times = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                long sum = nums3[i] + nums4[j];
+                times += map.getOrDefault((long)(-sum), 0);
+            }
+        }
+        return times;
+    }
+
+    /**
+     * 给你一个链表，两两交换其中相邻的节点，并返回交换后链表的头节点。你必须在不修改节点内部的值的情况下完成本题（即，只能进行节点交换）。
+     */
+    public ListNode swapPairs(ListNode head) {
+        Stack<ListNode> stack = new Stack<>();
+        ListNode cur = head;
+        ListNode fakeHead = new ListNode();
+        ListNode wCur = fakeHead;
+        while (cur != null) {
+            if (stack.size() == 2) {
+                while (!stack.isEmpty()) {
+                    ListNode pop = stack.pop();
+                    pop.next = null;
+                    wCur.next = pop;
+                    wCur = wCur.next;
+                }
+            }
+            stack.push(cur);
+            cur = cur.next;
+        }
+        while (!stack.isEmpty()) {
+            ListNode pop = stack.pop();
+            pop.next = null;
+            wCur.next = pop;
+            wCur = wCur.next;
+        }
+        return fakeHead.next;
+    }
+
     /**
      * 有一堆石头，用整数数组 stones 表示。其中 stones[i] 表示第 i 块石头的重量。
      *
@@ -18,18 +189,18 @@ public class Solution {
         }
         int t = sum / 2;
         // dp[i][j]表示在前i个元素中拿到的不大于j的x个石头的和的最大值
-        int[][] dp = new int[stones.length+1][t+1];
+        int[][] dp = new int[stones.length + 1][t + 1];
         for (int i = 1; i <= stones.length; i++) {
             for (int j = 0; j <= t; j++) {
                 // 每一次都会面临选与不选第i个石头
-                if(j<stones[i-1]){
+                if (j < stones[i - 1]) {
                     dp[i][j] = dp[i - 1][j];
                 } else {
-                    dp[i][j] = Math.max(dp[i - 1][j], dp[i - 1][j - stones[i-1]] + stones[i-1]);
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i - 1][j - stones[i - 1]] + stones[i - 1]);
                 }
             }
         }
-        return sum - 2*dp[stones.length][t];
+        return sum - 2 * dp[stones.length][t];
     }
 
     /**
