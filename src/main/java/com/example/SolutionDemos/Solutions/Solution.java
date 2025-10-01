@@ -4,6 +4,397 @@ import java.util.*;
 
 public class Solution {
     /**
+     * 给定一个长度为 n 的 0 索引整数数组 nums。初始位置在下标 0。
+     *
+     * 每个元素 nums[i] 表示从索引 i 向后跳转的最大长度。换句话说，如果你在索引 i 处，你可以跳转到任意 (i + j) 处：
+     *
+     * 0 <= j <= nums[i] 且 i + j < n 返回到达 n - 1 的最小跳跃次数。测试用例保证可以到达 n - 1。
+     * 
+     * @param nums
+     * @return
+     */
+    public int jump(int[] nums) {
+        int n = nums.length;
+        if (n == 1) {
+            return 0;
+        }
+        if (n == 2) {
+            return 1;
+        }
+        int[] dp = new int[n];
+        Arrays.fill(dp, Integer.MAX_VALUE);
+        dp[0] = 0;
+        dp[1] = 1;
+        for (int i = 1; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                if (j + nums[j] >= i) {
+                    dp[i] = Math.min(dp[i], dp[j] + 1);
+                }
+            }
+        }
+        return dp[n-1];
+    }
+
+    /**
+     * 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+     * 
+     * @param height
+     * @return
+     */
+    public int trap(int[] height) {
+        int n = height.length;
+        int[] leftMaxHeight = new int[n];
+        leftMaxHeight[0] = height[0];
+        for (int i = 1; i < n; i++) {
+            leftMaxHeight[i] = Math.max(leftMaxHeight[i - 1], height[i]);
+        }
+        int[] rightMaxHeight = new int[n];
+        rightMaxHeight[n - 1] = height[n - 1];
+        for (int j = n - 2; j >= 0; j--) {
+            rightMaxHeight[j] = Math.max(rightMaxHeight[j + 1], height[j]);
+        }
+
+        int ans = 0;
+        for (int i = 0; i < n; i++) {
+            ans += Math.min(leftMaxHeight[i], rightMaxHeight[i]) - height[i];
+        }
+        return ans;
+    }
+
+    /**
+     * 给定一个候选人编号的集合 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+     *
+     * candidates 中的每个数字在每个组合中只能使用 一次 。
+     *
+     * 注意：解集不能包含重复的组合。
+     * 
+     * @param candidates
+     * @param target
+     * @return
+     */
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        recurCombinationSum2(candidates, 0, 0, target, new ArrayList<>());
+        return combinationSum2Ans;
+    }
+
+    public List<List<Integer>> combinationSum2Ans = new ArrayList<>();
+
+    public void recurCombinationSum2(int[] nums, int start, int currentSum, int target, List<Integer> list) {
+        if (currentSum == target) {
+            combinationSum2Ans.add(new ArrayList<>(list));
+            return;
+        } else if (currentSum > target) {
+            return;
+        }
+        for (int i = start; i < nums.length; i++) {
+            // 同一层的选择中还不允许选择相同元素
+            if (i > start && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            list.add(nums[i]);
+            recurCombinationSum2(nums, i + 1, currentSum + nums[i], target, list);
+            list.remove(list.size() - 1);
+        }
+    }
+
+    /**
+     * 35. 搜索插入位置
+     * 
+     * @param nums
+     * @param target
+     * @return
+     */
+    public int searchInsert(int[] nums, int target) {
+        return binarySearch(nums, target);
+    }
+
+    /**
+     * 在排序数组中查找元素的第一个和最后一个位置
+     * 
+     * @param nums
+     * @param target
+     * @return
+     */
+    public int[] searchRange(int[] nums, int target) {
+        if (nums.length >= 1 && nums[nums.length - 1] >= target) {
+            int left = binarySearch(nums, target);
+            int right = binarySearch(nums, target + 1);
+            if (nums[left] == target) {
+                return new int[] {left, right - 1};
+            }
+        }
+        return new int[] {-1, -1};
+    }
+
+    /**
+     * 找到非递减数组中第一个大于等于target的下标
+     * 
+     * @param nums
+     * @param target
+     * @return
+     */
+    public int binarySearch(int[] nums, int target) {
+        int left = 0;
+        int right = nums.length - 1;
+        int mid = 0;
+        while (left <= right) {
+            mid = (left + right) / 2;
+            if (nums[mid] < target) {
+                left = mid + 1;
+            } else if (nums[mid] >= target) {
+                right = mid - 1;
+            }
+        }
+        return left;
+    }
+
+    /**
+     * 下一个排列
+     */
+    public void nextPermutation(int[] nums) {
+        if (nums.length <= 1) {
+            return;
+        }
+        int p = nums.length - 2;
+        while (p >= 0 && nums[p] >= nums[p + 1]) {
+            p--;
+        }
+        int q = nums.length - 1;
+        if (p >= 0) {
+            while (nums[q] <= nums[p]) {
+                q--;
+            }
+            swapNumberInNums(nums, p, q);
+        }
+        p++;
+        q = nums.length - 1;
+        while (p < q) {
+            swapNumberInNums(nums, p, q);
+            p++;
+            q--;
+        }
+    }
+
+    public void swapNumberInNums(int[] nums, int p, int q) {
+        int temp = nums[q];
+        nums[q] = nums[p];
+        nums[p] = temp;
+    }
+
+    /**
+     * 给定一个仅包含数字 2-9 的字符串，返回所有它能表示的字母组合。答案可以按 任意顺序 返回。
+     *
+     * 给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+     * 
+     * @param digits
+     * @return
+     */
+    public List<String> letterCombinations(String digits) {
+        if (digits == null || digits.equals("")) {
+            return new ArrayList<>();
+        }
+        char[] numberChar = digits.toCharArray();
+        Map<Character, String[]> map = new HashMap<>();
+        map.put('2', new String[] {"a", "b", "c"});
+        map.put('3', new String[] {"d", "e", "f"});
+        map.put('4', new String[] {"g", "h", "i"});
+        map.put('5', new String[] {"j", "k", "l"});
+        map.put('6', new String[] {"m", "n", "o"});
+        map.put('7', new String[] {"p", "q", "r", "s"});
+        map.put('8', new String[] {"t", "u", "v"});
+        map.put('9', new String[] {"w", "x", "y", "z"});
+        recurCom(numberChar, map, 0, new StringBuilder());
+        return new ArrayList<>(letterCombinationsAns);
+    }
+
+    public Set<String> letterCombinationsAns = new HashSet<>();
+
+    public void recurCom(char[] number, Map<Character, String[]> map, int index, StringBuilder str) {
+        if (index >= number.length) {
+            letterCombinationsAns.add(str.toString());
+            return;
+        }
+        for (String s : map.get(number[index])) {
+            str.append(s);
+            recurCom(number, map, index + 1, str);
+            str.deleteCharAt(str.length() - 1);
+        }
+    }
+
+    /**
+     * 三数之和
+     * 
+     * @param nums
+     * @return
+     */
+    public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);
+        List<List<Integer>> list = new ArrayList<>();
+        for (int i = 0; i < nums.length - 2; i++) {
+            if (nums[i] > 0) {
+                return list;
+            }
+            if (i >= 1 && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            int left = i + 1;
+            int right = nums.length - 1;
+            while (left < right) {
+                if (nums[left] + nums[right] == -nums[i]) {
+                    List<Integer> temp = new ArrayList<>();
+                    temp.add(nums[i]);
+                    temp.add(nums[left]);
+                    temp.add(nums[right]);
+                    list.add(temp);
+                    while (right > left && nums[right] == nums[right - 1])
+                        right--;
+                    while (right > left && nums[left] == nums[left + 1])
+                        left++;
+                    right--;
+                    left++;
+                } else if (nums[left] + nums[right] < -nums[i]) {
+                    // 说明两者之和需要大一些，左指针右移动
+                    left++;
+                } else {
+                    right--;
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 给你一个正整数 n 。
+     *
+     * 请你将 n 的值替换为 n 的 质因数 之和，重复这一过程。
+     *
+     * 注意，如果 n 能够被某个质因数多次整除，则在求和时，应当包含这个质因数同样次数。 返回 n 可以取到的最小值。
+     */
+    public int smallestValue(int n) {
+        int temp = getSumOfZhiYin(n);
+        while (n > temp) {
+            n = temp;
+            temp = getSumOfZhiYin(n);
+        }
+        return n;
+    }
+
+    public int getSumOfZhiYin(int n) {
+        if (n <= 2) {
+            return n;
+        }
+        int sum = 0;
+        while (n > 1) {
+            for (int i = 2; i <= n; i++) {
+                if (n % i == 0) {
+                    n = n / i;
+                    sum += i;
+                    break;
+                }
+
+            }
+        }
+        return sum;
+    }
+
+    /**
+     * 给定一个非空的字符串 s ，检查是否可以通过由它的一个子串重复多次构成。
+     */
+    public boolean repeatedSubstringPattern(String s) {
+        int i = 1;
+        int len = s.length();
+        while (i < len) {
+            if (len % i != 0) {
+                i++;
+                continue;
+            }
+            if (s.substring(0, i).equals(s.substring(len - i, len))
+                && s.substring(i, len).equals(s.substring(0, len - i))) {
+                return true;
+            }
+            i++;
+        }
+        return false;
+    }
+
+    /**
+     * 给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
+     *
+     * 有效字符串需满足：
+     *
+     * 左括号必须用相同类型的右括号闭合。 左括号必须以正确的顺序闭合。 每个右括号都有一个对应的相同类型的左括号。
+     * 
+     * @param s
+     * @return
+     */
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '{' || c == '[' || c == '(') {
+                stack.push(c);
+            } else {
+                if (stack.isEmpty()) {
+                    return false;
+                }
+                Character pop = stack.pop();
+                if (c == '}' && pop != '{') {
+                    return false;
+                }
+                if (c == ']' && pop != '[') {
+                    return false;
+                }
+                if (c == ')' && pop != '(') {
+                    return false;
+                }
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    /**
+     * 给你一棵 完全二叉树 的根节点 root ，求出该树的节点个数。
+     *
+     * 完全二叉树 的定义如下：在完全二叉树中，除了最底层节点可能没填满外，其余每层节点数都达到最大值，并且最下面一层的节点都集中在该层最左边的若干位置。若最底层为第 h 层（从第 0 层开始），则该层包含 1~ 2h 个节点。
+     * 
+     * @param root
+     * @return
+     */
+    public int countNodes(TreeNode root) {
+        return recurCountNodes(root);
+    }
+
+    public int recurCountNodes(TreeNode node) {
+        if (node == null) {
+            return 0;
+        }
+        return 1 + recurCountNodes(node.right) + recurCountNodes(node.left);
+    }
+
+    /**
+     * 给你一棵二叉树的根节点 root ，翻转这棵二叉树，并返回其根节点。
+     * 
+     * @param root
+     * @return
+     */
+    public TreeNode invertTree(TreeNode root) {
+        invertTreeRecur(root);
+        return root;
+    }
+
+    public void invertTreeRecur(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        TreeNode temp = node.left;
+        node.left = node.right;
+        node.right = temp;
+        invertTreeRecur(node.left);
+        invertTreeRecur(node.right);
+    }
+
+    /**
      * 给你一个整数数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。
      *
      * 返回 滑动窗口中的最大值 。
@@ -12,11 +403,11 @@ public class Solution {
         int n = nums.length;
         int right;
         int left = 0;
-        int []result = new int[n-k+1];
+        int[] result = new int[n - k + 1];
         TreeMap<Integer, Integer> occurTimes = new TreeMap<>(new Comparator<Integer>() {
             @Override
             public int compare(Integer o1, Integer o2) {
-                return o2-o1;
+                return o2 - o1;
             }
         });
         for (right = 0; right < n; right++) {
@@ -28,10 +419,10 @@ public class Solution {
                 result[0] = occurTimes.firstKey();
                 continue;
             }
-            occurTimes.put(nums[right-1], occurTimes.getOrDefault(nums[right-1], 0) - 1);
+            occurTimes.put(nums[right - 1], occurTimes.getOrDefault(nums[right - 1], 0) - 1);
             occurTimes.put(nums[left], occurTimes.getOrDefault(nums[left], 0) + 1);
             left++;
-            while (occurTimes.get(occurTimes.firstKey())<=0){
+            while (occurTimes.get(occurTimes.firstKey()) <= 0) {
                 occurTimes.pollFirstEntry();
             }
             result[right] = occurTimes.firstKey();
@@ -122,52 +513,52 @@ public class Solution {
      *
      * 0 <= a, b, c, d < n a、b、c 和 d 互不相同 nums[a] + nums[b] + nums[c] + nums[d] == target 你可以按 任意顺序 返回答案 。
      */
-//    public List<List<Integer>> fourSum(int[] nums, int target) {
-//        Arrays.sort(nums);
-//        int n = nums.length;
-//        List<Integer> list = new ArrayList<>();
-//        Map<String, List<Integer>> map = new HashMap<>();
-//        long sum = 0;
-//        for (int i = 0; i < n - 3; i++) {
-//            list.add(nums[i]);
-//            sum += nums[i];
-//            for (int j = i + 1; j < n - 2; j++) {
-//                if (nums[j] > 0 && sum + nums[j] > target) {
-//                    continue;
-//                }
-//                sum += nums[j];
-//                list.add(nums[j]);
-//                int r = j + 1;
-//                int l = n - 1;
-//                while (r < l) {
-//                    long tempSum = nums[r] + nums[l];
-//                    if (tempSum == target - sum) {
-//                        list.add(nums[r]);
-//                        list.add(nums[l]);
-//                        map.put(list.toString(), new ArrayList<>(list));
-//                        list.removeLast();
-//                        list.removeLast();
-//                        r++;
-//                    }
-//                    if (tempSum < target - sum) {
-//                        r++;
-//                    }
-//                    if (tempSum > target - sum) {
-//                        l--;
-//                    }
-//                }
-//                sum -= nums[j];
-//                list.removeLast();
-//            }
-//            sum -= nums[i];
-//            list.removeLast();
-//        }
-//        List<List<Integer>> result = new ArrayList<>();
-//        map.forEach((k, v) -> {
-//            result.add(v);
-//        });
-//        return result;
-//    }
+    // public List<List<Integer>> fourSum(int[] nums, int target) {
+    // Arrays.sort(nums);
+    // int n = nums.length;
+    // List<Integer> list = new ArrayList<>();
+    // Map<String, List<Integer>> map = new HashMap<>();
+    // long sum = 0;
+    // for (int i = 0; i < n - 3; i++) {
+    // list.add(nums[i]);
+    // sum += nums[i];
+    // for (int j = i + 1; j < n - 2; j++) {
+    // if (nums[j] > 0 && sum + nums[j] > target) {
+    // continue;
+    // }
+    // sum += nums[j];
+    // list.add(nums[j]);
+    // int r = j + 1;
+    // int l = n - 1;
+    // while (r < l) {
+    // long tempSum = nums[r] + nums[l];
+    // if (tempSum == target - sum) {
+    // list.add(nums[r]);
+    // list.add(nums[l]);
+    // map.put(list.toString(), new ArrayList<>(list));
+    // list.removeLast();
+    // list.removeLast();
+    // r++;
+    // }
+    // if (tempSum < target - sum) {
+    // r++;
+    // }
+    // if (tempSum > target - sum) {
+    // l--;
+    // }
+    // }
+    // sum -= nums[j];
+    // list.removeLast();
+    // }
+    // sum -= nums[i];
+    // list.removeLast();
+    // }
+    // List<List<Integer>> result = new ArrayList<>();
+    // map.forEach((k, v) -> {
+    // result.add(v);
+    // });
+    // return result;
+    // }
 
     /**
      * 给你两个字符串：ransomNote 和 magazine ，判断 ransomNote 能不能由 magazine 里面的字符构成。
