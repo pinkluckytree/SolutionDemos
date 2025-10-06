@@ -4,6 +4,180 @@ import java.util.*;
 
 public class Solution {
     /**
+     * 给你一个整数 n ，求恰由 n 个节点组成且节点值从 1 到 n 互不相同的 二叉搜索树 有多少种？返回满足题意的二叉搜索树的种数。
+     * 
+     * @param n
+     * @return
+     */
+    public int numTrees(int n) {
+        // 使用dp[]，dp[i]表示由i个节点构成的二叉搜索数的数量
+        // 对于n个数，从1...n,以其中的一个数x作为根，最终构成的二叉搜索数的数量是左子树[1,x),右子树(x,n]的数量乘积
+        int[] dp = new int[n+1];
+        dp[0] = 1;
+        dp[1] = 1;
+        for (int i = 2; i <= n; i++) {
+            for (int j = 1; j <= i; j++) {
+                dp[i] += dp[j-1]*dp[i-j];
+            }
+        }
+        return dp[n];
+    }
+
+    /**
+     * 给你一个整数数组 nums ，其中可能包含重复元素，请你返回该数组所有可能的 子集（幂集）。
+     *
+     * 解集 不能 包含重复的子集。返回的解集中，子集可以按 任意顺序 排列。
+     */
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+        Arrays.sort(nums);
+        subsetsWithDupAns = new ArrayList<>();
+        recurSubsetsWithDup(nums, 0, new ArrayList<>());
+        return subsetsWithDupAns;
+    }
+
+    public List<List<Integer>> subsetsWithDupAns;
+
+    public void recurSubsetsWithDup(int[] nums, int startIndex, List<Integer> list) {
+        subsetsWithDupAns.add(new ArrayList<>(list));
+        if (startIndex >= nums.length) {
+            return;
+        }
+        for (int i = startIndex; i < nums.length; i++) {
+            if (i > startIndex && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            list.add(nums[i]);
+            recurSubsetsWithDup(nums, i + 1, list);
+            // while (i < nums.length - 1 && nums[i] == nums[i + 1]) {
+            // i++;
+            // }
+            list.remove(list.size() - 1);
+        }
+    }
+
+    /**
+     * 给定 n 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+     *
+     * 求在该柱状图中，能够勾勒出来的矩形的最大面积。
+     */
+    public int largestRectangleAreaOptimize(int[] heights) {
+        if (heights == null || heights.length == 0) {
+            return 0;
+        }
+        if (heights.length == 1) {
+            return heights[0];
+        }
+        Stack<Integer> stack = new Stack<>();
+        // left[i]记录第i个元素其左边第一个小于其高度的位置
+        int[] left = new int[heights.length];
+        for (int i = 0; i < heights.length; i++) {
+            if (stack.isEmpty()) {
+                left[i] = -1;
+            } else {
+                while (!stack.isEmpty() && heights[stack.peek()] >= heights[i]) {
+                    stack.pop();
+                }
+                left[i] = stack.isEmpty() ? -1 : stack.peek();
+            }
+            stack.push(i);
+        }
+
+        stack = new Stack<>();
+        // right[i]记录第i个元素其右边第一个小于其高度的位置
+        int[] right = new int[heights.length];
+        for (int i = heights.length - 1; i >= 0; i--) {
+            if (stack.isEmpty()) {
+                right[i] = heights.length;
+            } else {
+                while (!stack.isEmpty() && heights[i] <= heights[stack.peek()]) {
+                    stack.pop();
+                }
+                right[i] = stack.isEmpty() ? heights.length : stack.peek();
+            }
+            stack.push(i);
+        }
+        int max = 0;
+        for (int i = 0; i < heights.length; i++) {
+            max = Math.max(heights[i] * (right[i] - left[i] - 1), max);
+        }
+        return max;
+    }
+
+    public int largestRectangleArea(int[] heights) {
+        int max = 0;
+        for (int i = 0; i < heights.length; i++) {
+            for (int j = 0; j < i; j++) {
+                max = Math.max(max, getMin(heights, j, i) * (i - j + 1));
+            }
+        }
+        return max;
+    }
+
+    public int getMin(int[] nums, int i, int j) {
+        int min = Integer.MAX_VALUE;
+        for (int index = i; index <= j; index++) {
+            min = Math.min(nums[index], min);
+        }
+        return min;
+    }
+
+    /**
+     * 给你一个整数数组 nums ，数组中的元素 互不相同 。返回该数组所有可能的子集（幂集）。
+     *
+     * 解集 不能 包含重复的子集。你可以按 任意顺序 返回解集。
+     */
+    public List<List<Integer>> subsets(int[] nums) {
+        recurSubSet(nums, new ArrayList<>(), 0);
+        return ans;
+    }
+
+    public List<List<Integer>> ans = new ArrayList<>();
+
+    public void recurSubSet(int[] nums, List<Integer> list, int startIndex) {
+        ans.add(new ArrayList<>(list));
+        if (startIndex >= nums.length) {
+            return;
+        }
+        for (int i = startIndex; i < nums.length; i++) {
+            list.add(nums[i]);
+            recurSubSet(nums, list, i + 1);
+            list.remove(list.size() - 1);
+        }
+    }
+
+    /**
+     * 给你两个单词 word1 和 word2， 请返回将 word1 转换成 word2 所使用的最少操作数 。
+     *
+     * 你可以对一个单词进行如下三种操作：
+     */
+    public int minDistance(String word1, String word2) {
+        if (word1.length() * word2.length() == 0) {
+            return word1.length() + word2.length();
+        }
+
+        // dp[i][j]表示将word1的前i个字符转换为word2的前j个字符需要的最小操作数
+        int[][] dp = new int[word1.length() + 1][word2.length() + 1];
+        dp[0][0] = 0;
+        // 初始化边界值
+        for (int i = 0; i < word1.length() + 1; i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j < word2.length() + 1; j++) {
+            dp[0][j] = j;
+        }
+        for (int i = 1; i < word1.length() + 1; i++) {
+            for (int j = 1; j < word2.length() + 1; j++) {
+                if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                    dp[i][j] = Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1));
+                } else {
+                    dp[i][j] = Math.min(dp[i - 1][j - 1] + 1, Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1));
+                }
+            }
+        }
+        return dp[word1.length()][word2.length()];
+    }
+
+    /**
      * 给定一个长度为 n 的 0 索引整数数组 nums。初始位置在下标 0。
      *
      * 每个元素 nums[i] 表示从索引 i 向后跳转的最大长度。换句话说，如果你在索引 i 处，你可以跳转到任意 (i + j) 处：
@@ -32,7 +206,7 @@ public class Solution {
                 }
             }
         }
-        return dp[n-1];
+        return dp[n - 1];
     }
 
     /**

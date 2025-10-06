@@ -14,7 +14,8 @@ public class SolutionMain {
 //        solution.threeSum(nums);
 //        solution.letterCombinations("23");
 //        solution.nextPermutation(new int[]{5,4,7,5,3,2});
-        solution.combinationSum2(new int[]{10,1,2,7,6,1,5}, 8);
+//        solution.combinationSum2(new int[]{10,1,2,7,6,1,5}, 8);
+        solution.numTrees(3);
     }
 
 }
